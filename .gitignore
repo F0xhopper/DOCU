@@ -22,7 +22,30 @@
 /frontend/npm-debug.log*
 /frontend/yarn-debug.log*
 /frontend/yarn-error.log*
+# Ignore Node.js dependencies
+/backend/node_modules
 
+# Ignore environment variable files
+/backend/.env.local
+/backend/.env.development.local
+/backend/.env.test.local
+/backend/.env.production.local
+
+# Ignore build outputs (if applicable)
+# Add specific build directories or files if you use any build tools
+# /backend/dist
+# /backend/build
+
+# Ignore testing coverage reports
+/backend/coverage
+
+# Ignore debug log files
+/backend/npm-debug.log*
+/backend/yarn-debug.log*
+/backend/yarn-error.log*
+
+# Ignore temporary files
+/backend/.DS_Store
 # Miscellaneous
 .DS_Store
 .env.local
