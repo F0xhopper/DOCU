@@ -15,10 +15,22 @@ const pdfSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    text: {
-      type: String,
-      default: "", // Optional: You might choose not to store text in MongoDB if it's indexed in ElasticSearch.
+    pageCount: {
+      type: Number,
+      required: true,
     },
+    pages: [
+      {
+        pageNumber: {
+          type: Number,
+          required: true,
+        },
+        text: {
+          type: String,
+          default: "",
+        },
+      },
+    ],
   },
   { timestamps: true }
 );

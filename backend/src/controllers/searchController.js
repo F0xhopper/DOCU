@@ -1,43 +1,48 @@
-import elasticClient from "../utils/elasticClient.js";
+import PDF from "../models/pdfModel.js";
 
-export const searchDocuments = async (req, res) => {
+export const searchPDFs = async (req, res) => {
   try {
-    const { query } = req.query;
+    const query = req.query;
 
-    // Search PDFs and Notes in parallel
-    const [pdfResults, noteResults] = await Promise.all([
-      elasticClient.search({
-        index: "pdfs",
-        body: {
-          query: {
-            match: { text: query },
+    const results = await PDF.aggregate([
+      {
+        $search: {
+          index: "default", // Use the name of your search index
+          text: {
+            query: query,
+            path: "pages.text", // Field to search within
+            fuzzy: { maxEdits: 1 }, // Optional: enable fuzzy search
           },
         },
-      }),
-      elasticClient.search({
-        index: "notes",
-        body: {
-          query: {
-            match: { content: query },
+      },
+      {
+        $project: {
+          title: 1,
+          url: 1,
+          pageCount: 1,
+          pages: {
+            $filter: {
+              input: "$pages",
+              as: "page",
+              cond: {
+                $regexMatch: {
+                  input: "$$page.text",
+                  regex: query,
+                  options: "i",
+                },
+              },
+            },
           },
         },
-      }),
+      },
     ]);
 
-    // Combine the results from both indices
-    const pdfHits = pdfResults.body.hits.hits.map((hit) => ({
-      type: "pdf",
-      data: hit._source,
-    }));
-    const noteHits = noteResults.body.hits.hits.map((hit) => ({
-      type: "note",
-      data: hit._source,
-    }));
-
-    const results = [...pdfHits, ...noteHits];
+    if (results.length === 0) {
+      return res.status(404).json({ message: "No matching pages found" });
+    }
 
     res.status(200).json({ results });
   } catch (error) {
-    res.status(500).json({ error: "Failed to search documents" });
+    res.status(500).json({ error: "Failed to search PDF pages" });
   }
 };
