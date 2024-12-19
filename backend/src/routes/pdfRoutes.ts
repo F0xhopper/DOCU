@@ -1,6 +1,6 @@
 import express from "express";
 import multer from "multer";
-import { uploadPDF } from "../controllers/pdfController.js";
+import { getAllPDF, uploadPDF } from "../controllers/pdfController.js";
 import authMiddleware from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
@@ -16,5 +16,6 @@ router.post(
   upload.single("file"), // 'file' is the key name for the file in the request
   uploadPDF
 );
-
+router.get("/pdf/:id");
+router.get("/", getAllPDF);
 export default router;

@@ -10,9 +10,6 @@ export const uploadPDF = async (req: any, res: any) => {
     }
 
     const uploadResult = await uploadFile(req.file);
-    res
-      .status(200)
-      .json({ message: "File uploaded successfully", uploadResult });
 
     // Extract text from the PDF
     let extractedData;
@@ -64,6 +61,56 @@ export const uploadPDF = async (req: any, res: any) => {
     const err = error as Error;
     res.status(500).json({
       error: "Failed to upload and process PDF",
+      details: err.message,
+    });
+  }
+};
+export const getPDFById = async (req: any, res: any) => {
+  const { id } = req.params;
+
+  try {
+    // Fetch the PDF metadata from the database using the provided ID
+    const pdf = await PDF.findById(id);
+
+    if (!pdf) {
+      return res.status(404).json({ error: "PDF not found" });
+    }
+
+    // Get the file key from the database (this should be the path in S3)
+    const pdfUrl = pdf.url; // Assuming `pdf.url` stores the S3 file key (not the full URL)
+    res.json({ fileUrl: pdfUrl });
+  } catch (error) {
+    console.error("Error fetching PDF:", error);
+    const err = error as Error;
+    res.status(500).json({
+      error: "Failed to retrieve PDF from the server",
+      details: err.message,
+    });
+  }
+};
+export const getAllPDF = async (req: any, res: any) => {
+  try {
+    // Fetch all PDFs metadata from the database
+    const pdfs = await PDF.find();
+
+    if (!pdfs || pdfs.length === 0) {
+      return res.status(404).json({ error: "No PDFs found" });
+    }
+
+    // Map over the results to return the URL, user ID, and title for each PDF
+    const pdfDetails = pdfs.map((pdf: any) => ({
+      fileUrl: pdf.url, // Assuming `pdf.url` stores the full S3 URL
+      userId: pdf.userId, // Assuming `pdf.userId` stores the ID of the user who uploaded it
+      title: pdf.title, // Assuming `pdf.title` stores the title of the PDF
+    }));
+
+    // Send the list of PDFs with the required details
+    res.json(pdfs);
+  } catch (error) {
+    console.error("Error fetching PDFs:", error);
+    const err = error as Error;
+    res.status(500).json({
+      error: "Failed to retrieve PDFs from the server",
       details: err.message,
     });
   }

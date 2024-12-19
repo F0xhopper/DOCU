@@ -25,7 +25,8 @@ export const uploadFile = async (file: any) => {
 
   try {
     const data = await s3.send(new PutObjectCommand(params));
-    const fileUrl = `https://${process.env.S3_BUCKET}.s3.${s3.config.region}.amazonaws.com/${file.originalname}`;
+    const fileUrl = `https://${process.env.S3_BUCKET}.s3.eu-north-1.amazonaws.com/${params.Key}`;
+    console.log(params);
 
     return { Location: fileUrl }; // Return the URL of the uploaded file
   } catch (error) {
